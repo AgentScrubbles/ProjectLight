@@ -35,7 +35,9 @@ namespace ProjectLight
         private readonly DeviceCapturer _capture;
         private BitmapTransformer _transformer;
         private readonly ISendableColor _lightSender;
+        private readonly BridgeService _bridgeService;
         private readonly DisplayRequest _displayRequest = new DisplayRequest();
+        
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
 
         private bool _configLoaded;
@@ -47,6 +49,7 @@ namespace ProjectLight
             _capture = new DeviceCapturer();
             _lightSender = new SampleColorSender(ColorExample);
             LightConfigText.Text = "LightLayout.xml";
+            _bridgeService = new BridgeService();
             SetCaptureReader();
         }
 
@@ -59,12 +62,12 @@ namespace ProjectLight
                 Mode = BindingMode.OneTime,
                 Source = devices
             };
-
-            deviceSelector.SetBinding(ComboBox.ItemsSourceProperty, binding);
+            BridgeSelector.IsEnabled = false;
+            DeviceSelector.SetBinding(ComboBox.ItemsSourceProperty, binding);
         }
         private async void deviceSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedId = deviceSelector.SelectedValue as string;
+            var selectedId = DeviceSelector.SelectedValue as string;
             await _capture.SetSelectedDevice(selectedId);
             _initialized = true;
             SetCaptureReader();
@@ -163,6 +166,29 @@ namespace ProjectLight
                 }
                 );
             }
+        }
+
+        private async void BridgeSearch_OnClick(object sender, RoutedEventArgs e)
+        {
+            var bridges = await _bridgeService.GetBridges();
+            BridgeSelector.IsEnabled = true;
+            BridgeSelector.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+            {
+                Mode = BindingMode.OneTime,
+                Source = bridges.ToDictionary(k => k, v => v)
+            });
+        }
+
+        private async void BridgeSelector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            AvailableLights.IsEnabled = true;
+            _bridgeService.SelectedBridge = BridgeSelector.SelectedValue as string;
+            var availableLights = await _bridgeService.GetLights();
+            AvailableLights.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+            {
+                Mode = BindingMode.OneTime,
+                Source = availableLights.ToDictionary(k => k, v => v)
+            });
         }
     }
 }

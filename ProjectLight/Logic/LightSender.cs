@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI;
 using ProjectLight.Interfaces;
+using Q42.HueApi.WinRT;
 
 namespace ProjectLight.Logic
 {
@@ -12,5 +15,7 @@ namespace ProjectLight.Logic
         {
             Debug.WriteLine("Light {0} has been sent color {1}", key, color);
         }
+
+        
     }
 }

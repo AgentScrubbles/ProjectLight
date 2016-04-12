@@ -3,7 +3,9 @@
     "Microsoft.ApplicationInsights": "1.0.0",
     "Microsoft.ApplicationInsights.PersistenceChannel": "1.0.0",
     "Microsoft.ApplicationInsights.WindowsApps": "1.0.0",
-    "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
+    "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0",
+    "Q42.HueApi": "2.2.7",
+    "Q42.HueApi.WinRT": "1.4.3.42"
   },
   "frameworks": {
     "uap10.0": {}

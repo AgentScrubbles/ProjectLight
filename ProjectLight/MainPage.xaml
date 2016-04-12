@@ -12,16 +12,28 @@
             <ColumnDefinition Width="250" />
             <ColumnDefinition Width="500" />
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="200" />
+            <RowDefinition Height="200" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Column="0" Grid.Row="0">
             <TextBlock Text="Selected Device"/>
-            <ComboBox x:Name="deviceSelector" DisplayMemberPath="Key" SelectedValuePath="Value"  HorizontalAlignment="Left"  VerticalAlignment="Top" Width="250" SelectionChanged="deviceSelector_SelectionChanged"/>
+            <ComboBox x:Name="DeviceSelector" DisplayMemberPath="Key" SelectedValuePath="Value"  HorizontalAlignment="Left"  VerticalAlignment="Top" Width="250" SelectionChanged="deviceSelector_SelectionChanged"/>
             <Button Name="PreviewButton" Click="PreviewButton_Click" HorizontalAlignment="Center" Margin="10">Start Preview</Button>
             <Button Name="CaptureButton" Click="CaptureButton_Click" HorizontalAlignment="Center" Margin="10">Start Capture</Button>
-            <TextBox Name="LightConfigText" HorizontalAlignment="Center" Width="250"></TextBox>
-            <Button Name="LoadLightConfig" Click="LoadLightConfig_OnClick" HorizontalAlignment="Center">Load Configuration</Button>
+            <TextBox Name="LightConfigText" HorizontalAlignment="Center" Width="250" Margin="10"></TextBox>
+            <Button Name="LoadLightConfig" Click="LoadLightConfig_OnClick" HorizontalAlignment="Center" Margin="10">Load Configuration</Button>
+            
         </StackPanel>
-        <StackPanel Grid.Column="1">
+        <StackPanel Grid.Column="0" Grid.Row="1">
+            <Button Name="BridgeSearch" Click="BridgeSearch_OnClick" Width="250" HorizontalAlignment="Center">Search for Bridge</Button>
+            <ComboBox x:Name="BridgeSelector" DisplayMemberPath="Key" SelectedValuePath="Value" HorizontalAlignment="Center" Margin="10" Width="250" SelectionChanged="BridgeSelector_OnSelectionChanged"></ComboBox>
+            <ListView Name="AvailableLights"></ListView>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Grid.Row="0">
             <Rectangle Width="500" Height="200" Name="ColorExample"></Rectangle>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Grid.Row="1">
             <CaptureElement Name="PreviewControl" Stretch="Uniform"/>
             
         </StackPanel>

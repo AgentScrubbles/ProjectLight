@@ -101,6 +101,7 @@
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Interfaces\ISendableColor.cs" />
     <Compile Include="Logic\BitmapTransformer.cs" />
+    <Compile Include="Logic\BridgeService.cs" />
     <Compile Include="Logic\DeviceCapturer.cs" />
     <Compile Include="Logic\LightConfigurationReader.cs" />
     <Compile Include="Logic\LightSender.cs" />
