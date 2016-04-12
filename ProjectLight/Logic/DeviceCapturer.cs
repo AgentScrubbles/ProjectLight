@@ -20,7 +20,7 @@ namespace ProjectLight.Logic
         public bool IsPreviewing { get; set; }
         public bool IsCapturing { get; set; }
         private bool _isInitialized { get; set; }
-
+        private bool _isCompleted { get; set; }
         public DeviceCapturer()
         {
             _isInitialized = false;
@@ -64,6 +64,21 @@ namespace ProjectLight.Logic
 
                 }
             }
+            _isCompleted = true;
+        }
+
+        public async Task StopCapture()
+        {
+            var completedTask = Task.Run(async () =>
+            {
+                while (!_isCompleted)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            });
+            _isCompleted = false;
+            IsCapturing = false;
+            await completedTask;
         }
     }
 }

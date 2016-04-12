@@ -1,22 +1,32 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.UI;
 using Newtonsoft.Json;
+using ProjectLight.Exceptions;
+using ProjectLight.Extensions;
+using ProjectLight.Interfaces;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
-using Q42.HueApi.WinRT;
 
 namespace ProjectLight.Logic
 {
-    public class BridgeService
+    public class BridgeService : ISendableColor
     {
+        private const string ConfigFileName = "HueConfig";
+        private ILocalHueClient _client;
+        public ConcurrentDictionary<string, Light> AvailableLights { get; private set; } 
+
         public class HueConfiguration
         {
             public string ProjectName { get; set; }
             public string Key { get; set; }
+            public string AppKey { get; set; }
         }
 
         public string SelectedBridge { get; set; }
@@ -33,7 +43,7 @@ namespace ProjectLight.Logic
             StorageFile file;
             try
             {
-                file = await ApplicationData.Current.LocalFolder.GetFileAsync("HueConfig");
+                file = await ApplicationData.Current.LocalFolder.GetFileAsync(ConfigFileName);
             }
             catch(FileNotFoundException fe)
             {
@@ -42,15 +52,18 @@ namespace ProjectLight.Logic
                     Key = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 18),
                     ProjectName = "ProjectLight"
                 };
-                file = await ApplicationData.Current.LocalFolder.CreateFileAsync("HueConfig",
-                    CreationCollisionOption.OpenIfExists);
+                file = await ApplicationData.Current.LocalFolder.CreateFileAsync(ConfigFileName,
+                        CreationCollisionOption.OpenIfExists);
                 try
                 {
-                    await new LocalHueClient(SelectedBridge).RegisterAsync(xorgs.ProjectName, xorgs.Key);
+                    var client = new LocalHueClient(SelectedBridge);
+                    var appKey = await client.RegisterAsync(xorgs.ProjectName, xorgs.Key);
+                    client.Initialize(appKey);
                 }
                 catch (Exception e)
                 {
-                    return null;
+                    await file.DeleteAsync();
+                    throw new RequiresUserInteractionException("User needs to press the Hue connection button", e);
                 }
                 await FileIO.WriteTextAsync(file,
                     JsonConvert.SerializeObject(xorgs));
@@ -60,13 +73,31 @@ namespace ProjectLight.Logic
             return config;
         }
 
-        public async Task<ICollection<string>> GetLights()
+        public async Task DeleteConfiguration()
+        {
+            var file = await ApplicationData.Current.LocalFolder.GetFileAsync(ConfigFileName);
+            if (file != null)
+            {
+                await file.DeleteAsync();
+            }
+        }
+
+        public async Task<IDictionary<string, string>> GetLights()
         {
             var config = await GetConfiguration();
-            ILocalHueClient client = new LocalHueClient(SelectedBridge);
-             client.Initialize(config.Key);
-            var lights = await client.GetLightsAsync();
-            return lights.Select(k => k.Id).ToList();
+            _client = new LocalHueClient(SelectedBridge);
+            _client.Initialize(config.AppKey);
+            var lights = (await _client.GetLightsAsync()).ToList();
+            AvailableLights = lights.ToConcurrentDictionary(k => k.Id, v => v);
+            return lights.ToConcurrentDictionary(k => k.Id, v => v.Name);
+        }
+
+        public async Task SendColorAsync(string key, Color color)
+        {
+            var lightCommand = new LightCommand {};
+            lightCommand.SetColor(color.ToString().Substring(0, 7));
+            await _client.SendCommandAsync(lightCommand, new [] {key});
+            Debug.WriteLine("Light {0} has been sent color {1}", key, color);
         }
     }
 }

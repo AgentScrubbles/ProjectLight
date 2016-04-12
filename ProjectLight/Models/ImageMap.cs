@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace ProjectLight.Models
 {
     public class ImageMap
     {
-        public List<ImageRectangle> Blocks { get; set; }
+        public ConcurrentDictionary<string, ImageRectangle> Blocks { get; set; }
     }
 
     public class ImageRectangle

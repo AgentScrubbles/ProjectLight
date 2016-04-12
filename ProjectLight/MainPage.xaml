@@ -13,20 +13,21 @@
             <ColumnDefinition Width="500" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="200" />
-            <RowDefinition Height="200" />
+            <RowDefinition Height="400" />
+            <RowDefinition Height="400" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="0" Grid.Row="0">
             <TextBlock Text="Selected Device"/>
             <ComboBox x:Name="DeviceSelector" DisplayMemberPath="Key" SelectedValuePath="Value"  HorizontalAlignment="Left"  VerticalAlignment="Top" Width="250" SelectionChanged="deviceSelector_SelectionChanged"/>
             <Button Name="PreviewButton" Click="PreviewButton_Click" HorizontalAlignment="Center" Margin="10">Start Preview</Button>
             <Button Name="CaptureButton" Click="CaptureButton_Click" HorizontalAlignment="Center" Margin="10">Start Capture</Button>
-            <TextBox Name="LightConfigText" HorizontalAlignment="Center" Width="250" Margin="10"></TextBox>
-            <Button Name="LoadLightConfig" Click="LoadLightConfig_OnClick" HorizontalAlignment="Center" Margin="10">Load Configuration</Button>
-            
+
         </StackPanel>
         <StackPanel Grid.Column="0" Grid.Row="1">
-            <Button Name="BridgeSearch" Click="BridgeSearch_OnClick" Width="250" HorizontalAlignment="Center">Search for Bridge</Button>
+            <TextBox Name="LightConfigText" HorizontalAlignment="Center" Width="250" Margin="10"></TextBox>
+            <Button Name="LoadLightConfig" Click="LoadLightConfig_OnClick" Width="250" HorizontalAlignment="Center" Margin="10">Load Configuration</Button>
+            <Button Name="DeleteLightConfig" Click="DeleteLightConfig_OnClick" Width="250" HorizontalAlignment="Center" Margin="10">Delete Configuration</Button>
+            <Button Name="BridgeSearch" Click="BridgeSearch_OnClick" Width="250" HorizontalAlignment="Center" Margin="10">Search for Bridge</Button>
             <ComboBox x:Name="BridgeSelector" DisplayMemberPath="Key" SelectedValuePath="Value" HorizontalAlignment="Center" Margin="10" Width="250" SelectionChanged="BridgeSelector_OnSelectionChanged"></ComboBox>
             <ListView Name="AvailableLights"></ListView>
         </StackPanel>

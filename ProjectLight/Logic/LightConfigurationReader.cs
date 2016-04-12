@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using ProjectLight.Extensions;
 using ProjectLight.Models;
 
 namespace ProjectLight.Logic
@@ -58,7 +59,7 @@ namespace ProjectLight.Logic
                             break;
                     }
                 }
-                return new ImageMap {Blocks = stack.ToList()};
+                return new ImageMap {Blocks = stack.ToConcurrentDictionary(k => k.Id, v => v)};
             }
         }
     }

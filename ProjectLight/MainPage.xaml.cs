@@ -12,6 +12,7 @@ using Windows.Media.Capture;
 using Windows.System.Display;
 using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -20,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using ProjectLight.Exceptions;
 using ProjectLight.Extensions;
 using ProjectLight.Interfaces;
 
@@ -47,9 +49,11 @@ namespace ProjectLight
         {
             this.InitializeComponent();
             _capture = new DeviceCapturer();
-            _lightSender = new SampleColorSender(ColorExample);
+            
             LightConfigText.Text = "LightLayout.xml";
             _bridgeService = new BridgeService();
+            _lightSender = _bridgeService;
+            PreviewButton.IsEnabled = false;
             SetCaptureReader();
         }
 
@@ -71,11 +75,21 @@ namespace ProjectLight
             await _capture.SetSelectedDevice(selectedId);
             _initialized = true;
             SetCaptureReader();
+            PreviewButton.IsEnabled = true;
         }
 
         private async void CaptureButton_Click(object sender, RoutedEventArgs e)
         {
-            await _capture.StartCapture().Forget();
+            if (_capture.IsCapturing)
+            {
+                await _capture.StopCapture();
+                CaptureButton.Content = "Start Capture";
+            }
+            else
+            {
+                CaptureButton.Content = "Stop Capture";
+                await _capture.StartCapture().Forget();
+            }
         }
         private async void PreviewButton_Click(object sender, RoutedEventArgs e)
         {
@@ -146,30 +160,12 @@ namespace ProjectLight
             _capture.IsPreviewing = false;
         }
         #endregion
-
-        private class SampleColorSender : ISendableColor
-        {
-            private readonly Rectangle _rectangle;
-            public SampleColorSender(Rectangle colorExample)
-            {
-                _rectangle = colorExample;
-            }
-
-
-            public async Task SendColorAsync(string key, Color color)
-            {
-                
-                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                () =>
-                {
-                    _rectangle.Fill = new SolidColorBrush(color);
-                }
-                );
-            }
-        }
+        
 
         private async void BridgeSearch_OnClick(object sender, RoutedEventArgs e)
         {
+            BridgeSelector.SetBinding(ItemsControl.ItemsSourceProperty, new Binding());
+            BridgeSelector.IsEnabled = false;
             var bridges = await _bridgeService.GetBridges();
             BridgeSelector.IsEnabled = true;
             BridgeSelector.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
@@ -181,14 +177,32 @@ namespace ProjectLight
 
         private async void BridgeSelector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            AvailableLights.IsEnabled = true;
-            _bridgeService.SelectedBridge = BridgeSelector.SelectedValue as string;
-            var availableLights = await _bridgeService.GetLights();
-            AvailableLights.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+            try
             {
-                Mode = BindingMode.OneTime,
-                Source = availableLights.ToDictionary(k => k, v => v)
-            });
+                if (!BridgeSelector.Items.Any())
+                {
+                    return;
+                }
+                AvailableLights.IsEnabled = true;
+                _bridgeService.SelectedBridge = BridgeSelector.SelectedValue as string;
+                var availableLights = await _bridgeService.GetLights();
+                AvailableLights.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+                {
+                    Mode = BindingMode.OneTime,
+                    Source = availableLights
+                });
+            }
+            catch (RequiresUserInteractionException)
+            {
+                AvailableLights.IsEnabled = false;
+                MessageDialog mError = new MessageDialog("Press the connect button on your Hue Bridge and try again.");
+                await mError.ShowAsync();
+            }
+        }
+
+        private async void DeleteLightConfig_OnClick(object sender, RoutedEventArgs e)
+        {
+            await _bridgeService.DeleteConfiguration();
         }
     }
 }

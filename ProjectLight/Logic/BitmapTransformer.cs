@@ -21,12 +21,12 @@ namespace ProjectLight.Logic
         {
             get
             {
-                return Map.Blocks.ToDictionary(k => k.Id, k => new BitmapBounds
+                return Map.Blocks.ToDictionary(k => k.Key, k => new BitmapBounds
                 {
-                    Height = k.Height,
-                    Width = k.Width,
-                    X = k.X,
-                    Y = k.Y
+                    Height = k.Value.Height,
+                    Width = k.Value.Width,
+                    X = k.Value.X,
+                    Y = k.Value.Y
                 });
             }
         }
@@ -42,8 +42,11 @@ namespace ProjectLight.Logic
             var bitmaps = await Split(decoder);
             bitmaps.AsParallel().ForAll(async k =>  
             {
-                var color = await GetColorFromBitmap(k.Value);
-                await Sendable.SendColorAsync(k.Key, color);
+                foreach (var light in Map.Blocks[k.Key].AffectedLights)
+                {
+                    var color = await GetColorFromBitmap(k.Value);
+                    await Sendable.SendColorAsync(light.Id, color);
+                }
             });
         }
         
