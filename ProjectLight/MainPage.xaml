@@ -21,7 +21,9 @@
             <Button Name="LoadLightConfig" Click="LoadLightConfig_OnClick" HorizontalAlignment="Center">Load Configuration</Button>
         </StackPanel>
         <StackPanel Grid.Column="1">
+            <Rectangle Width="500" Height="200" Name="ColorExample"></Rectangle>
             <CaptureElement Name="PreviewControl" Stretch="Uniform"/>
+            
         </StackPanel>
     </Grid>
 </Page>

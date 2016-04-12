@@ -10,6 +10,8 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Capture;
 using Windows.System.Display;
+using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -17,6 +19,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
+using ProjectLight.Extensions;
+using ProjectLight.Interfaces;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -29,7 +34,7 @@ namespace ProjectLight
     {
         private readonly DeviceCapturer _capture;
         private BitmapTransformer _transformer;
-        private readonly LightSender _lightSender;
+        private readonly ISendableColor _lightSender;
         private readonly DisplayRequest _displayRequest = new DisplayRequest();
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
 
@@ -40,7 +45,7 @@ namespace ProjectLight
         {
             this.InitializeComponent();
             _capture = new DeviceCapturer();
-            _lightSender = new LightSender();
+            _lightSender = new SampleColorSender(ColorExample);
             LightConfigText.Text = "LightLayout.xml";
             SetCaptureReader();
         }
@@ -67,7 +72,7 @@ namespace ProjectLight
 
         private async void CaptureButton_Click(object sender, RoutedEventArgs e)
         {
-            await _capture.StartCapture();
+            await _capture.StartCapture().Forget();
         }
         private async void PreviewButton_Click(object sender, RoutedEventArgs e)
         {
@@ -139,6 +144,25 @@ namespace ProjectLight
         }
         #endregion
 
+        private class SampleColorSender : ISendableColor
+        {
+            private readonly Rectangle _rectangle;
+            public SampleColorSender(Rectangle colorExample)
+            {
+                _rectangle = colorExample;
+            }
 
+
+            public async Task SendColorAsync(string key, Color color)
+            {
+                
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    _rectangle.Fill = new SolidColorBrush(color);
+                }
+                );
+            }
+        }
     }
 }
